@@ -1,7 +1,6 @@
 use tokio::net::{TcpStream};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 use crate::types;
-use snafu::{prelude::*, Whatever};
 
 pub struct Connection {
   // socket: TcpStream,
@@ -19,30 +18,30 @@ impl Connection {
       writer,
     }
   }
-  pub async fn read_data(&mut self) -> Result<Vec<u8>, Whatever> {
+  pub async fn read_data(&mut self) -> anyhow::Result<Vec<u8>> {
     let mut size_buf = [0; 8];
     match self.reader.read_exact(&mut size_buf).await {
-      Ok(0) => whatever!("Disconnect when fetch size"),
+      Ok(0) => Err(types::Error::Message("Disconnect with fetch size 0".to_owned()).into()),
       Ok(_n) => {
         let size = u64::from_be_bytes(size_buf);
         let mut data_buf = vec![0; size.try_into().unwrap()];
         match self.reader.read_exact(&mut data_buf).await {
-          Ok(0) => whatever!("Disconnect when fetch size"),
+          Ok(0) => Err(types::Error::Message("Disconnect with fetch size 0".to_owned()).into()),
           Ok(_n) => {
             Ok(data_buf)
           },
           // 非预期错误，由于我们无需再做什么，因此直接停止处理
-          Err(e) => whatever!("{:?}", e),
+          Err(e) => Err(e.into())
         }
       },
       // 非预期错误，由于我们无需再做什么，因此直接停止处理
-      Err(e) => whatever!("{:?}", e),
+      Err(e) => Err(e.into())
     }
   }
-  pub async fn write_text(&mut self, text: String) -> Result<&mut Self, Box<dyn std::error::Error>> {
+  pub async fn write_text(&mut self, text: String) -> anyhow::Result<&mut Self> {
     self.write_data(types::MessageType::Text(text)).await
   }
-  pub async fn write_data(&mut self, data: types::MessageType) -> Result<&mut Self, Box<dyn std::error::Error>> {
+  pub async fn write_data(&mut self, data: types::MessageType) -> anyhow::Result<&mut Self> {
     let bytes: Option<&[u8]>;
     match data {
       types::MessageType::Text(ref text) => {

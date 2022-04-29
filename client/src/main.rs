@@ -2,7 +2,7 @@ use tokio::net::{TcpStream};
 use wetalk::Connection;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     // 监听指定地址，等待 TCP 连接进来
     let socket = TcpStream::connect("127.0.0.1:5555").await.unwrap();
 

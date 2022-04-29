@@ -1,9 +1,8 @@
 use tokio::net::{TcpListener, TcpStream};
 use wetalk::Connection;
-use snafu::{Whatever};
 
 #[tokio::main]
-async fn main() -> Result<(), Whatever> {
+async fn main() -> anyhow::Result<()> {
     // 监听指定地址，等待 TCP 连接进来
     let listener = TcpListener::bind("127.0.0.1:5555").await.unwrap();
 
@@ -17,15 +16,20 @@ async fn main() -> Result<(), Whatever> {
     }
 }
 
-async fn process(socket: TcpStream) -> Result<(), Whatever> {
+async fn process(socket: TcpStream) -> anyhow::Result<()> {
     let mut connection = Connection::new(socket);
     loop {
         let buf = connection.read_data().await?;
         let text = String::from_utf8_lossy(&buf[..]);
         println!("get: {}", text);
-        if connection.write_text(text.into()).await.is_err() {
-            // 非预期错误，由于我们这里无需再做什么，因此直接停止处理
-            break
+
+        match connection.write_text(text.into()).await {
+            Ok(_) => (), 
+            Err(e) => {
+                // 非预期错误，比如连接中断
+                println!("err: {}", e);
+                break
+            }
         }
     }
     Ok(())
