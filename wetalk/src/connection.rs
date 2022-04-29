@@ -24,17 +24,17 @@ impl Connection {
       Ok(0) => Err(types::Error::Message("Disconnect with fetch size 0".to_owned()).into()),
       Ok(_n) => {
         let size = u64::from_be_bytes(size_buf);
-        let mut data_buf = vec![0; size.try_into().unwrap()];
+        let mut data_buf = vec![0; size.try_into()?];
         match self.reader.read_exact(&mut data_buf).await {
           Ok(0) => Err(types::Error::Message("Disconnect with fetch size 0".to_owned()).into()),
           Ok(_n) => {
             Ok(data_buf)
           },
-          // 非预期错误，由于我们无需再做什么，因此直接停止处理
+          // 非预期错误
           Err(e) => Err(e.into())
         }
       },
-      // 非预期错误，由于我们无需再做什么，因此直接停止处理
+      // 非预期错误
       Err(e) => Err(e.into())
     }
   }
