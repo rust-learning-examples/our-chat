@@ -23,16 +23,23 @@ async fn main() -> anyhow::Result<()> {
 async fn process(socket: TcpStream) -> anyhow::Result<()> {
     let mut connection = Connection::new(socket);
     loop {
-        let buf = connection.read_data().await?;
-        let text = String::from_utf8_lossy(&buf[..]);
-        log::debug!("get text: {:?}", text);
-
-        match connection.write_text(text.into()).await {
-            Ok(_) => (),
-            Err(e) => {
-                // 非预期错误，比如连接中断
-                log::debug!("err: {}", e);
-                return Err(e)
+        match connection.read_message().await {
+            Ok(message) => {
+                match message {
+                    wetalk::Message::Text(message) => {
+                        connection.write_message(wetalk::Message::Text(message.clone())).await?;
+                        log::debug!("recv text message: {}, and send back", message);
+                    },
+                    wetalk::Message::Close(err) => {
+                        log::debug!("client disconnected, err: {:?}", err);
+                        return Err(err)
+                    },
+                    _ => ()
+                }
+            },
+            Err(err) => {
+                log::debug!("client disconnected, err: {:?}", err);
+                return Err(err)
             }
         }
     }
