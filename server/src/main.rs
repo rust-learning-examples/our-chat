@@ -1,9 +1,11 @@
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tokio::net::{TcpListener, TcpStream};
 use wetalk::Connection;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    pretty_env_logger::init();
+    // pretty_env_logger::init();
+    tracing_subscriber::registry().with(tracing_subscriber::fmt::layer()).init();
     // 监听指定地址，等待 TCP 连接进来
     log::info!("listen on 127.0.0.1:5555");
     let listener = TcpListener::bind("127.0.0.1:5555").await.unwrap();
