@@ -13,11 +13,11 @@ async fn main() -> anyhow::Result<()> {
     match TcpStream::connect("127.0.0.1:5555").await {
         Ok(socket) => {
             let mut connection = Connection::new(socket);
-            connection.write_text("Hello, world1!".to_string()).await.unwrap();
+            connection.write_text("Hello, world1!").await.unwrap();
             log::debug!("send text message: Hello, world1!");
-            connection.write_text("Hello, world2!".to_string()).await.unwrap();
+            connection.write_text("Hello, world2!").await.unwrap();
             log::debug!("send text message: Hello, world12!");
-            connection.write_text("Hello, world3!".to_string()).await.unwrap();
+            connection.write_text("Hello, world3!").await.unwrap();
             log::debug!("send text message: Hello, world13!");
             loop {
                 match connection.read_message().await {

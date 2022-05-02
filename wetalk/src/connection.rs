@@ -4,8 +4,8 @@ use crate::{Message};
 
 pub struct Connection {
   // socket: TcpStream,
-  pub reader: io::ReadHalf<TcpStream>,
-  pub writer: io::WriteHalf<TcpStream>,
+  pub reader: ReaderConnection,
+  pub writer: WriterConnection,
 }
 
 impl Connection {
@@ -14,9 +14,33 @@ impl Connection {
     let (reader, writer) = io::split(socket);
     Connection {
       // socket,
-      reader,
-      writer,
+      reader: ReaderConnection::new(reader),
+      writer: WriterConnection::new(writer),
     }
+  }
+  pub async fn read_message(&mut self) -> anyhow::Result<Message> {
+    self.reader.read_message().await
+  }
+  pub async fn write_text(&mut self, text: &str) -> anyhow::Result<&mut Self> {
+    self.writer.write_text(text).await?;
+    Ok(self)
+  }
+  pub async fn write_message(&mut self, message: Message) -> anyhow::Result<&mut Self> {
+    self.writer.write_message(message).await?;
+    Ok(self)
+  }
+  pub fn split(self) -> (ReaderConnection, WriterConnection) {
+    (self.reader, self.writer)
+  }
+}
+
+pub struct ReaderConnection {
+  pub reader: io::ReadHalf<TcpStream>,
+}
+
+impl ReaderConnection {
+  fn new(reader: io::ReadHalf<TcpStream>) -> Self {
+    Self { reader }
   }
   pub async fn read_message(&mut self) -> anyhow::Result<Message> {
     let mut size_buf = [0; 8];
@@ -39,8 +63,19 @@ impl Connection {
       Err(e) => Err(e.into())
     }
   }
-  pub async fn write_text(&mut self, text: String) -> anyhow::Result<&mut Self> {
-    self.write_message(Message::Text(text)).await
+}
+
+
+pub struct WriterConnection {
+  pub writer: io::WriteHalf<TcpStream>,
+}
+
+impl WriterConnection {
+  fn new(writer: io::WriteHalf<TcpStream>) -> Self {
+    Self { writer }
+  }
+  pub async fn write_text(&mut self, text: &str) -> anyhow::Result<&mut Self> {
+    self.write_message(Message::Text(text.to_string())).await
   }
   pub async fn write_message(&mut self, message: Message) -> anyhow::Result<&mut Self> {
     let mut bytes: Option<&[u8]> = None;
@@ -56,7 +91,6 @@ impl Connection {
       let final_bytes = [len_bytes.as_ref(), bytes].concat();
       self.writer.write_all(&final_bytes).await?;
     }
-
     Ok(self)
   }
 }
