@@ -1,6 +1,8 @@
 [workspace]
 members = [
   "wetalk",
-  "server",
-  "client",
+  "examples/tcp_server",
+  "examples/tcp_client",
+  "examples/ws_server",
+  "examples/ws_client",
 ]

@@ -1,7 +1,2 @@
-pub enum Message {
-  Text(String),
-  Binary(Vec<u8>),
-  Ping(String),
-  Pong(String),
-  Close(anyhow::Error),
-}
+pub use tokio_tungstenite::tungstenite::Message;
+pub use tokio_tungstenite::tungstenite::protocol::frame::{CloseFrame, coding::CloseCode};

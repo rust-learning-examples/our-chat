@@ -1,6 +1,6 @@
 use tokio::net::{TcpStream};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
-use crate::{Message};
+use crate::{message::{self, Message}};
 
 pub struct Connection {
   // socket: TcpStream,
@@ -45,12 +45,22 @@ impl ReaderConnection {
   pub async fn read_message(&mut self) -> anyhow::Result<Message> {
     let mut size_buf = [0; 8];
     match self.reader.read_exact(&mut size_buf).await {
-      Ok(0) => Ok(Message::Close(anyhow::anyhow!("Disconnect with fetch size 0".to_owned()))),
+      Ok(0) => Ok(
+        Message::Close(Some(message::CloseFrame {
+          code: message::CloseCode::Normal,
+          reason: "Disconnect with fetch size 0".into(),
+        }))
+      ),
       Ok(_n) => {
         let size = u64::from_be_bytes(size_buf);
         let mut data_buf = vec![0; size.try_into()?];
         match self.reader.read_exact(&mut data_buf).await {
-          Ok(0) => Ok(Message::Close(anyhow::anyhow!("Disconnect with fetch size 0".to_owned()))),
+          Ok(0) => Ok(
+            Message::Close(Some(message::CloseFrame {
+              code: message::CloseCode::Normal,
+              reason: "Disconnect with fetch size 0".into(),
+            }))
+          ),
           Ok(_n) => {
             let text = String::from_utf8_lossy(&data_buf[..]);
             Ok(Message::Text(text.into()))
