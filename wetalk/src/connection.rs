@@ -103,4 +103,7 @@ impl WriterConnection {
     }
     Ok(self)
   }
+  pub async fn close(&mut self) -> anyhow::Result<()> {
+    Ok(self.writer.shutdown().await?)
+  }
 }

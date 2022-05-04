@@ -5,4 +5,5 @@ members = [
   "examples/tcp_client",
   "examples/ws_server",
   "examples/ws_client",
+  "examples/axum_server",
 ]

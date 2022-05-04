@@ -5,7 +5,7 @@ use std::{env, net::{SocketAddr}};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // pretty_env_logger::init();
-    
+
     // install global collector configured based on RUST_LOG env var.
     tracing_subscriber::fmt::init();
     // with addr, eg: RUST_LOG=debug cargo run -p ws_server -- 127.0.0.1:12345
