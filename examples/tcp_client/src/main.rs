@@ -23,10 +23,10 @@ async fn main() -> anyhow::Result<()> {
                 match connection.read_message().await {
                     Ok(message) => {
                         match message {
-                            wetalk::Message::Text(message) => {
+                            wetalk::TSMessage::Text(message) => {
                                 log::debug!("recv text message: {}", message);
                             },
-                            wetalk::Message::Close(close_frame) => {
+                            wetalk::TSMessage::Close(close_frame) => {
                                 log::debug!("server close connected, err: {:?}", close_frame);
                                 return Err(anyhow::anyhow!("server close connected"))
                             },

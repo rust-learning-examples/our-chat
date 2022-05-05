@@ -38,7 +38,7 @@ async fn process(socket: TcpStream, addr: SocketAddr) -> anyhow::Result<()> {
         match reader.read_message().await {
             Ok(message) => {
                 match message {
-                    wetalk::Message::Text(message) => {
+                    wetalk::TSMessage::Text(message) => {
                         log::debug!("recv text message: {}", message);
                         let mut lock = StateWs::global().lock().await;
                         if let Some(writer) = (*lock).writer_connections.get_mut(&addr_str) {
@@ -47,7 +47,7 @@ async fn process(socket: TcpStream, addr: SocketAddr) -> anyhow::Result<()> {
                             log::debug!("send back message: {}", message);
                         }
                     },
-                    wetalk::Message::Close(close_frame) => {
+                    wetalk::TSMessage::Close(close_frame) => {
                         log::debug!("client disconnected, err: {:?}", close_frame);
                         return Err(anyhow::anyhow!("client disconnected"))
                     },

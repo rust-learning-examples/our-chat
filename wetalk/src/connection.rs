@@ -1,6 +1,6 @@
 use tokio::net::{TcpStream};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
-use crate::{message::{self, Message}};
+use crate::{message::{self, TSMessage as Message}};
 
 pub struct Connection {
   // socket: TcpStream,
@@ -46,8 +46,8 @@ impl ReaderConnection {
     let mut size_buf = [0; 8];
     match self.reader.read_exact(&mut size_buf).await {
       Ok(0) => Ok(
-        Message::Close(Some(message::CloseFrame {
-          code: message::CloseCode::Normal,
+        Message::Close(Some(message::TSCloseFrame {
+          code: message::TSCloseCode::Normal,
           reason: "Disconnect with fetch size 0".into(),
         }))
       ),
@@ -56,8 +56,8 @@ impl ReaderConnection {
         let mut data_buf = vec![0; size.try_into()?];
         match self.reader.read_exact(&mut data_buf).await {
           Ok(0) => Ok(
-            Message::Close(Some(message::CloseFrame {
-              code: message::CloseCode::Normal,
+            Message::Close(Some(message::TSCloseFrame {
+              code: message::TSCloseCode::Normal,
               reason: "Disconnect with fetch size 0".into(),
             }))
           ),

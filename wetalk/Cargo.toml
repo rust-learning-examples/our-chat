@@ -5,12 +5,23 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = [
+  "tcp",
+  "ws_tungstenite",
+  "ws_axum",
+]
+
+tcp = ['tokio-tungstenite']
+ws_tungstenite = ['tokio-tungstenite']
+ws_axum = ["axum"]
+
 [dependencies]
 futures = "0.3"
 
 anyhow = "1.0"
 thiserror = "1.0"
 tokio = { version = "1", features = ["full"] }
-tokio-tungstenite = "0.17"
 
-axum = { version = "0.5", features = ["ws", "headers"] }
+tokio-tungstenite = { version = "0.17", optional = true }
+axum = { version = "0.5", optional = true, features = ["ws", "headers"] }

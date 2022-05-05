@@ -8,9 +8,6 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
     // with addr, eg: RUST_LOG=debug cargo run -p tcp_server -- 127.0.0.1:12345
     let addr = env::args().nth(1).unwrap_or_else(|| "127.0.0.1:5555".to_string());
-    // 监听指定地址，等待 TCP 连接进来
-    log::info!("Listen on: {}", addr);
-
 
     let app = axum::Router::new()
         .route("/", axum::routing::get(websocket_handler))
